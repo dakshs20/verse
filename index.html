@@ -1,25 +1,512 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MienMe - Big Five Personality Test</title>
-    <!-- Tailwind CSS CDN -->
+    <title>MienMe - Discover Your True Self</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts for Inter (default) and Merriweather (fallback for Mersad) -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Merriweather:wght@700&display=swap" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div id="root"></div>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- React and ReactDOM CDN -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel for JSX transformation in browser -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Your React application code - MUST be type="text/babel" for in-browser JSX transformation -->
-    <script type="text/babel" src="script.js"></script>
+    <!-- Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
+
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" xintegrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoVBL5gI9kLmbG0CsdTXLSTJGwbMyA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #3b82f6, #1e40af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* View transition styles */
+        .view {
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            width: 100%;
+        }
+        .view.hidden {
+            opacity: 0;
+            transform: scale(0.98);
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        /* Custom animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+         @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loader {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3b82f6; /* blue-500 */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        /* Stripe element styling */
+        .StripeElement {
+            box-sizing: border-box;
+            height: 40px;
+            padding: 10px 12px;
+            border: 1px solid #ccd0d5;
+            border-radius: 0.375rem;
+            background-color: white;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            -webkit-transition: box-shadow 150ms ease;
+            transition: box-shadow 150ms ease;
+        }
+        .StripeElement--focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+        }
+        .StripeElement--invalid {
+            border-color: #fa755a;
+        }
+        .StripeElement--webkit-autofill {
+            background-color: #fefde5 !important;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Main Container -->
+    <div class="relative min-h-screen">
+
+        <!-- Header -->
+        <header id="main-header" class="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50 transition-all duration-300">
+            <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <a href="#" class="text-3xl font-extrabold gradient-text">MienMe</a>
+                <button id="home-button" class="hidden md:inline-block px-6 py-2 text-base font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105">Home</button>
+            </nav>
+        </header>
+
+        <!-- Home View -->
+        <main id="home-view" class="view fade-in">
+            <section class="py-20 md:py-32">
+                <div class="container mx-auto px-6 text-center">
+                    <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 leading-tight mb-4">Discover Your True Self.</h1>
+                    <p class="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto mb-8">MienMe is a professional, AI-powered personality assessment designed to reveal your core character traits, strengths, and potential for growth. Start your journey of self-discovery today.</p>
+                    <button id="start-test-btn" class="bg-blue-600 text-white font-bold py-4 px-10 rounded-lg text-lg hover:bg-blue-700 transition-transform transform hover:scale-105 shadow-lg">Take the Free Test</button>
+                </div>
+            </section>
+
+            <section class="bg-white py-20">
+                <div class="container mx-auto px-6">
+                    <h2 class="text-3xl font-bold text-center text-slate-800 mb-12">How It Works</h2>
+                    <div class="grid md:grid-cols-3 gap-12 text-center">
+                        <div class="fade-in" style="animation-delay: 0.2s;">
+                            <div class="bg-blue-500 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">1</div>
+                            <h3 class="text-xl font-semibold mb-2">Answer 50 Questions</h3>
+                            <p class="text-slate-600">Thoughtfully respond to a series of questions designed to understand various facets of your personality.</p>
+                        </div>
+                        <div class="fade-in" style="animation-delay: 0.4s;">
+                            <div class="bg-blue-500 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">2</div>
+                            <h3 class="text-xl font-semibold mb-2">Unlock Your AI Report</h3>
+                            <p class="text-slate-600">For a small fee of $2.99, unlock a comprehensive, personalized report generated by our advanced AI.</p>
+                        </div>
+                        <div class="fade-in" style="animation-delay: 0.6s;">
+                            <div class="bg-blue-500 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">3</div>
+                            <h3 class="text-xl font-semibold mb-2">Gain Deep Insights</h3>
+                            <p class="text-slate-600">Receive and download your detailed analysis, exploring your strengths, challenges, and unique qualities.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Test View -->
+        <main id="test-view" class="view hidden">
+            <div class="container mx-auto px-4 py-12 max-w-3xl">
+                <div class="bg-white p-8 rounded-2xl shadow-2xl">
+                    <h2 class="text-2xl font-bold text-center text-slate-800 mb-2">Personality Assessment</h2>
+                    <p id="question-counter" class="text-center text-slate-500 mb-4">Question 1 of 50</p>
+                    <div class="w-full bg-slate-200 rounded-full h-2.5 mb-6">
+                        <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 2%"></div>
+                    </div>
+                    
+                    <div id="question-container">
+                        <p id="question-text" class="text-xl md:text-2xl text-slate-700 mb-8 text-center min-h-[100px]"></p>
+                        <div id="options-container" class="space-y-4">
+                            <!-- Options will be injected here by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Payment View -->
+        <main id="payment-view" class="view hidden">
+             <div class="container mx-auto px-4 py-12 max-w-lg">
+                <div class="bg-white p-8 rounded-2xl shadow-2xl text-center fade-in">
+                    <h2 class="text-3xl font-extrabold text-slate-900 mb-3">Unlock Your Full Report</h2>
+                    <p class="text-slate-600 mb-6">You've completed the assessment! For just <span class="font-bold text-blue-600">$2.99</span>, you can unlock your personalized, in-depth personality analysis generated by our advanced AI.</p>
+                    
+                    <form id="payment-form" class="text-left">
+                        <div class="mb-4">
+                            <label for="card-element" class="block text-sm font-medium text-slate-700 mb-1">
+                                Credit or debit card
+                            </label>
+                            <div id="card-element">
+                                <!-- A Stripe Element will be inserted here. -->
+                            </div>
+                            <!-- Used to display form errors. -->
+                            <div id="card-errors" role="alert" class="text-red-600 text-sm mt-2"></div>
+                        </div>
+                        
+                        <button id="submit-payment-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300">
+                            Pay $2.99
+                        </button>
+                    </form>
+                    <p class="text-xs text-slate-400 mt-4">Secure payment powered by Stripe. This is a demonstration and your card will not be charged.</p>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Loading View -->
+        <main id="loading-view" class="view hidden">
+            <div class="flex flex-col items-center justify-center min-h-[60vh] text-center">
+                <div class="loader mb-4"></div>
+                <h2 class="text-2xl font-bold text-slate-800">Analyzing Your Personality...</h2>
+                <p class="text-slate-600">Our AI is processing your answers to create your unique report. Please wait a moment.</p>
+            </div>
+        </main>
+
+        <!-- Results View -->
+        <main id="results-view" class="view hidden">
+            <div class="container mx-auto px-4 py-12 max-w-4xl">
+                <div id="report-content" class="bg-white p-8 md:p-12 rounded-2xl shadow-2xl">
+                    <div class="text-center mb-8">
+                        <h1 class="text-3xl md:text-4xl font-extrabold gradient-text mb-2">Your Personality Report</h1>
+                        <p class="text-slate-600">This analysis is based on your responses and generated by AI.</p>
+                    </div>
+                    <div id="ai-result" class="prose prose-lg max-w-none">
+                        <!-- AI result will be injected here -->
+                    </div>
+                </div>
+                <div class="text-center mt-8">
+                     <button id="download-pdf-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg text-base hover:bg-blue-700 transition-transform transform hover:scale-105 shadow-lg">Download as PDF</button>
+                </div>
+            </div>
+        </main>
+
+    </div> <!-- End Main Container -->
+
+    <script type="module">
+        // --- CONFIGURATION ---
+        const STRIPE_PUBLISHABLE_KEY = 'pk_live_51SFpdLLaWqqtMQvqyJ9TVUt4ZTCm9o9YFQEpQNANXjapIk8JPqCUJh0sxE4HV6TVuPh6VipeYcI4tKQgRP4GZpf5007J2qH1ba';
+        const GEMINI_API_KEY = 'AIzaSyDcQuD6GbSqKDF0PAQ_EJzOv2639JLqzJk';
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
+
+        // --- PERSONALITY TEST QUESTIONS ---
+        const questions = [
+            { question: "You find it easy to introduce yourself to other people." },
+            { question: "You often get lost in thought, exploring ideas and possibilities." },
+            { question: "You prefer to have a detailed plan rather than improvise." },
+            { question: "You are more concerned with others' feelings than your own." },
+            { question: "You are usually calm and relaxed, even under pressure." },
+            { question: "You enjoy being the center of attention in social gatherings." },
+            { question: "You see things more for their practical use than their symbolic meaning." },
+            { question: "You are more spontaneous than organized." },
+            { question: "You often find it difficult to understand other people's feelings." },
+            { question: "You get stressed out easily." },
+            { question: "You rarely start a conversation with strangers." },
+            { question: "You are fascinated by abstract and theoretical concepts." },
+            { question: "A messy room or workspace makes you feel anxious." },
+            { question: "You would rather be right than be liked." },
+            { question: "You rarely feel sad or down." },
+            { question: "You prefer smaller, more intimate gatherings over large parties." },
+            { question: "You are more interested in facts and reality than in fantasies." },
+            { question: "You tend to procrastinate and need deadlines to get things done." },
+            { question: "You value harmony and cooperation over conflict and competition." },
+            { question: "You often experience mood swings." },
+            { question: "You feel comfortable just being yourself around others." },
+            { question: "You have a vivid imagination." },
+            { question: "You like to follow a routine and stick to it." },
+            { question: "You are sometimes seen as cold or insensitive by others." },
+            { question: "You are not easily bothered by things." },
+            { question: "You are talkative and outgoing." },
+            { question: "You are down-to-earth and practical." },
+            { question: "You make decisions quickly and spontaneously." },
+            { question: "You feel a deep sense of empathy for others." },
+            { question: "You often feel anxious or worried." },
+            { question: "You prefer to listen rather than talk in a conversation." },
+            { question: "You enjoy discussing different views and theories." },
+            { question: "You are meticulous and pay great attention to detail." },
+            { question: "You prioritize logic and fairness over compassion." },
+            { question: "You are emotionally stable and not easily upset." },
+            { question: "You actively seek out new social experiences." },
+            { question: "You are more focused on the present than the future." },
+            { question: "You like to keep your options open rather than commit to a plan." },
+            { question: "You are always ready to help a friend in need." },
+            { question: "You can be irritable or easily annoyed." },
+            { question: "You need a lot of private time to recharge." },
+            { question: "You are curious about many different things." },
+            { question: "You enjoy making to-do lists and checking items off." },
+            { question: "You believe making decisions based on facts is most important." },
+            { question: "You are very resilient in the face of setbacks." },
+            { question: "Your energy levels are high when you're around people." },
+            { question: "You prefer clear instructions over open-ended guidelines." },
+            { question: "You are adaptable and flexible in your approach to tasks." },
+            { question: "You are sensitive to the needs and feelings of others." },
+            { question: "You tend to see the worst in situations." },
+        ];
+        const options = [
+            { text: "Strongly Disagree", value: 1 },
+            { text: "Disagree", value: 2 },
+            { text: "Neutral", value: 3 },
+            { text: "Agree", value: 4 },
+            { text: "Strongly Agree", value: 5 },
+        ];
+        const optionColors = [
+            'bg-red-500 hover:bg-red-600',
+            'bg-orange-500 hover:bg-orange-600',
+            'bg-yellow-500 hover:bg-yellow-600',
+            'bg-green-500 hover:bg-green-600',
+            'bg-blue-500 hover:bg-blue-600'
+        ];
+
+        // --- STATE MANAGEMENT ---
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let stripe, card;
+
+        // --- DOM ELEMENTS ---
+        const views = {
+            home: document.getElementById('home-view'),
+            test: document.getElementById('test-view'),
+            payment: document.getElementById('payment-view'),
+            loading: document.getElementById('loading-view'),
+            results: document.getElementById('results-view'),
+        };
+        const mainHeader = document.getElementById('main-header');
+        const homeButton = document.getElementById('home-button');
+        const startTestBtn = document.getElementById('start-test-btn');
+        const questionCounter = document.getElementById('question-counter');
+        const progressBar = document.getElementById('progress-bar');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const paymentForm = document.getElementById('payment-form');
+        const submitPaymentBtn = document.getElementById('submit-payment-btn');
+        const aiResultContainer = document.getElementById('ai-result');
+        const downloadPdfBtn = document.getElementById('download-pdf-btn');
+
+        // --- APPLICATION LOGIC ---
+
+        // Function to switch between different views
+        function showView(viewId) {
+            Object.values(views).forEach(view => view.classList.add('hidden'));
+            if (views[viewId]) {
+                views[viewId].classList.remove('hidden');
+                views[viewId].classList.add('fade-in');
+            }
+            window.scrollTo(0, 0);
+
+            // Toggle header visibility and home button
+            if (viewId === 'home') {
+                 mainHeader.classList.remove('shadow-lg');
+                 homeButton.classList.add('hidden');
+            } else {
+                 mainHeader.classList.add('shadow-lg');
+                 homeButton.classList.remove('hidden');
+            }
+        }
+        
+        // Render the current question and options
+        function renderQuestion() {
+            if (currentQuestionIndex < questions.length) {
+                const question = questions[currentQuestionIndex];
+                questionCounter.textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+                progressBar.style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+                questionText.textContent = question.question;
+
+                optionsContainer.innerHTML = ''; // Clear previous options
+                options.forEach((option, index) => {
+                    const button = document.createElement('button');
+                    button.textContent = option.text;
+                    button.dataset.value = option.value;
+                    button.className = `w-full text-white font-semibold py-3 px-4 rounded-lg transition-transform transform hover:scale-105 ${optionColors[index]}`;
+                    button.onclick = () => handleAnswer(option.value);
+                    optionsContainer.appendChild(button);
+                });
+            } else {
+                finishTest();
+            }
+        }
+
+        // Handle user's answer and move to the next question
+        function handleAnswer(value) {
+            userAnswers.push({ question: questions[currentQuestionIndex].question, answer: value });
+            currentQuestionIndex++;
+            renderQuestion();
+        }
+
+        // Called when the test is completed
+        function finishTest() {
+            showView('payment');
+            initializeStripe();
+        }
+        
+        // Initialize Stripe.js and the card element
+        function initializeStripe() {
+            try {
+                stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+                const elements = stripe.elements();
+                card = elements.create('card', { style: { base: { fontSize: '16px' } } });
+                card.mount('#card-element');
+            } catch (error) {
+                console.error("Stripe initialization failed:", error);
+                const cardErrors = document.getElementById('card-errors');
+                cardErrors.textContent = "Could not load payment gateway. Please refresh the page.";
+            }
+        }
+
+        // Handle the (simulated) payment submission
+        async function handlePayment(event) {
+            event.preventDefault();
+            submitPaymentBtn.disabled = true;
+            submitPaymentBtn.textContent = 'Processing...';
+
+            // SIMULATION: In a real app, you'd use stripe.createPaymentMethod() and send the result to your server.
+            // Here, we'll just simulate a delay and then proceed.
+            setTimeout(() => {
+                showView('loading');
+                getPersonalityResult();
+            }, 1500);
+        }
+
+        // Fetch the personality analysis from the Gemini API
+        async function getPersonalityResult() {
+            const prompt = `
+                You are a world-class personality psychologist named Mien.
+                Analyze the following 50 personality test answers and provide a comprehensive, insightful, and positive personality report. The answers range from 1 (Strongly Disagree) to 5 (Strongly Agree).
+
+                The report should be structured as follows:
+                1.  **Personality Title:** A catchy, descriptive title for the personality type (e.g., "The Creative Visionary", "The Compassionate Leader"). Make this a markdown heading (##).
+                2.  **Summary:** A detailed paragraph summarizing the core personality.
+                3.  **Key Strengths:** A bulleted list of 3-5 key strengths. Use markdown for bullets (*).
+                4.  **Potential Growth Areas:** A bulleted list of 2-3 areas for potential growth, framed constructively. Use markdown for bullets (*).
+                5.  **How You Relate to Others:** A paragraph describing typical interaction styles.
+                6.  **Concluding Thought:** An inspiring final sentence.
+
+                Keep the tone professional, encouraging, and easy to understand. Here are the user's answers:
+                ${userAnswers.map((a, i) => `${i + 1}. ${a.question} - Answer: ${a.answer}`).join('\n')}
+            `;
+
+            try {
+                const response = await fetch(GEMINI_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                const text = result.candidates[0]?.content?.parts[0]?.text;
+                
+                if (text) {
+                    displayResult(text);
+                } else {
+                    displayResult("## Analysis Error\n\nWe're sorry, but we couldn't generate your report at this time. Please try again later.");
+                }
+            } catch (error) {
+                console.error('Error fetching from Gemini API:', error);
+                displayResult(`## Connection Error\n\nThere was an issue connecting to the AI service. Please check your connection and try again. Details: ${error.message}`);
+            }
+        }
+
+        // Display the AI-generated result on the page
+        function displayResult(resultText) {
+            // Basic markdown-to-HTML conversion
+            let html = resultText
+                .replace(/^## (.*$)/g, '<h2 class="text-2xl font-bold text-slate-800 mb-4">$1</h2>')
+                .replace(/^### (.*$)/g, '<h3 class="text-xl font-semibold text-slate-700 mt-6 mb-2">$1</h3>')
+                .replace(/\* (.*$)/gm, '<li class="mb-2">$1</li>')
+                .replace(/(<li>.*<\/li>)/gs, '<ul class="list-disc list-inside space-y-2 pl-4">$1</ul>')
+                .replace(/\n/g, '<br>');
+            
+            aiResultContainer.innerHTML = html;
+            showView('results');
+        }
+
+        // Download the result as a PDF
+        function downloadResultPDF() {
+            const { jsPDF } = window.jspdf;
+            const reportContent = document.getElementById('report-content');
+            downloadPdfBtn.textContent = "Generating...";
+            downloadPdfBtn.disabled = true;
+
+            html2canvas(reportContent, {
+                scale: 2, // Improve resolution
+                useCORS: true,
+                logging: false,
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'px',
+                    format: [canvas.width, canvas.height]
+                });
+                pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+                pdf.save('MienMe-Personality-Report.pdf');
+                downloadPdfBtn.textContent = "Download as PDF";
+                downloadPdfBtn.disabled = false;
+            }).catch(err => {
+                console.error("PDF generation failed:", err);
+                alert("Could not generate PDF. Please try again.");
+                downloadPdfBtn.textContent = "Download as PDF";
+                downloadPdfBtn.disabled = false;
+            });
+        }
+        
+        // --- EVENT LISTENERS ---
+        startTestBtn.addEventListener('click', () => {
+            showView('test');
+            renderQuestion();
+        });
+
+        homeButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Optional: Ask for confirmation if they are in the middle of a test.
+            if (!views.test.classList.contains('hidden')) {
+                if (confirm("Are you sure you want to go home? Your test progress will be lost.")) {
+                    currentQuestionIndex = 0;
+                    userAnswers = [];
+                    showView('home');
+                }
+            } else {
+                 showView('home');
+            }
+        });
+
+        paymentForm.addEventListener('submit', handlePayment);
+        downloadPdfBtn.addEventListener('click', downloadResultPDF);
+
+        // --- INITIALIZATION ---
+        showView('home'); // Show the home view on page load
+    </script>
+
 </body>
 </html>
