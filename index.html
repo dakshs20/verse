@@ -81,7 +81,7 @@
             </header>
             <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
                 <p class="text-lg text-gray-600 mb-6">
-                    MienMe is a comprehensive, AI-driven personality assessment designed to provide deep insights into who you are. Answer 50 carefully crafted questions to receive a detailed analysis of your unique personality traits, strengths, and potential areas for growth.
+                    MienMe is a comprehensive, AI-driven personality assessment designed to provide deep insights into who you are. Answer a series of carefully crafted questions to receive a detailed analysis of your unique personality traits, strengths, and potential areas for growth.
                 </p>
                 <button id="start-test-btn" class="w-full bg-indigo-600 text-white font-bold py-4 px-8 rounded-lg text-xl hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition-transform transform hover:scale-105">
                     Start The Free Test
@@ -98,7 +98,7 @@
                 <!-- Progress Bar -->
                 <div class="mb-8">
                     <div class="flex justify-between items-center mb-2">
-                        <p class="text-indigo-600 font-semibold">Question <span id="question-number">1</span> of 50</p>
+                        <p class="text-indigo-600 font-semibold">Question <span id="question-number">1</span> of <span id="total-questions">40</span></p>
                         <p id="progress-percent" class="font-bold text-gray-700">0%</p>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-3">
@@ -200,6 +200,7 @@
         };
         const startTestBtn = document.getElementById('start-test-btn');
         const questionNumberEl = document.getElementById('question-number');
+        const totalQuestionsEl = document.getElementById('total-questions');
         const questionTextEl = document.getElementById('question-text');
         const optionsContainerEl = document.getElementById('options-container');
         const progressBarEl = document.getElementById('progress-bar');
@@ -252,6 +253,7 @@
         const startTest = () => {
             currentQuestionIndex = 0;
             userAnswers = {};
+            totalQuestionsEl.textContent = questions.length;
             showPage('test');
             displayQuestion();
         };
@@ -286,7 +288,6 @@
 
             updateProgress();
             
-            // Update back button state
             backQuestionBtn.disabled = currentQuestionIndex === 0;
             backQuestionBtn.classList.toggle('opacity-50', currentQuestionIndex === 0);
             backQuestionBtn.classList.toggle('cursor-not-allowed', currentQuestionIndex === 0);
@@ -294,7 +295,6 @@
 
         const handleAnswerSelection = (event) => {
             userAnswers[currentQuestionIndex] = parseInt(event.target.value);
-            // Add a small delay for better UX before moving to the next question
             setTimeout(() => {
                 handleNextQuestion();
             }, 300);
