@@ -3,7 +3,7 @@ html {
 }
 body {
     font-family: 'Nunito Sans', sans-serif;
-    background-color: white;
+    background: linear-gradient(170deg, #f7f9fc 0%, #ffffff 100%);
     color: #5091cd;
     transition: background-color 0.5s ease;
 }
