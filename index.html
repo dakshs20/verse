@@ -19,18 +19,19 @@
                 <div id="header-content" class="max-w-6xl mx-auto flex justify-between items-center">
                     <img src="https://i.ibb.co/TDcKJZYm/genart-image-98-removebg-preview.png" alt="Logo" class="h-20 w-auto">
                     <nav class="hidden md:flex items-center space-x-1">
-                        <a href="#how-it-works" class="px-4 py-2 rounded-full font-medium hover:bg-gray-100 transition-colors duration-300">How It Works</a>
-                        <a href="#features" class="px-4 py-2 rounded-full font-medium hover:bg-gray-100 transition-colors duration-300">Features</a>
-                        <a href="#start-test" class="px-4 py-2 rounded-full font-medium hover:bg-gray-100 transition-colors duration-300">Start Test</a>
+                        <a href="#how-it-works" class="nav-link px-4 py-2 rounded-full font-medium transition-colors duration-300">How It Works</a>
+                        <a href="#features" class="nav-link px-4 py-2 rounded-full font-medium transition-colors duration-300">Features</a>
+                        <a href="#start-test" class="nav-link px-4 py-2 rounded-full font-medium transition-colors duration-300">Start Test</a>
                     </nav>
                 </div>
             </header>
 
             <main>
                 <!-- Hero Section -->
-                <section class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 text-center">
-                    <div class="w-full max-w-2xl">
-                        <div class="bg-white/60 backdrop-blur-sm p-8 sm:p-12 rounded-3xl border border-gray-200 shadow-xl">
+                <section class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 text-center relative overflow-hidden">
+                    <canvas id="particle-canvas" class="absolute top-0 left-0 w-full h-full z-0"></canvas>
+                    <div class="w-full max-w-2xl z-10">
+                        <div class="hero-card bg-white/10 backdrop-blur-md p-8 sm:p-12 rounded-3xl border border-white/20 shadow-2xl">
                             <h1 class="text-4xl sm:text-5xl font-bold mb-4 animated-item stagger-1">Discover the Real You</h1>
                             <p class="text-lg mb-8 animated-item stagger-2">Take our 25-question personality test and uncover your true traits, strengths, and hidden potentials.</p>
                             <button id="start-btn-hero" class="btn-primary py-3 px-8 text-lg rounded-xl animated-item stagger-3">Begin the Journey</button>
@@ -39,26 +40,26 @@
                 </section>
 
                 <!-- How It Works Section -->
-                <section id="how-it-works" class="py-16 sm:py-24 bg-white/70">
+                <section id="how-it-works" class="py-16 sm:py-24 bg-white/80">
                     <div class="max-w-5xl mx-auto px-6 lg:px-8 text-center">
                         <h2 class="text-3xl sm:text-4xl font-bold mb-4 animated-item">A Simple Path to Self-Discovery</h2>
                         <p class="text-lg max-w-2xl mx-auto mb-12 animated-item stagger-1">Our process is straightforward, insightful, and designed to provide you with immediate value.</p>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 interactive-cards">
                             <!-- Step 1 -->
                             <div class="flex flex-col items-center p-6 animated-item stagger-2 card rounded-2xl">
-                                <div class="flex items-center justify-center h-16 w-16 rounded-full bg-[#5091cd] text-white text-2xl font-bold mb-4 shadow-lg">1</div>
+                                <div class="flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-[#5091cd] to-[#437aae] text-white text-2xl font-bold mb-4 shadow-lg icon-container">1</div>
                                 <h3 class="text-xl font-semibold mb-2">Answer 25 Questions</h3>
                                 <p>Respond to each statement honestly on a five-point scale from "Strongly Agree" to "Strongly Disagree".</p>
                             </div>
                             <!-- Step 2 -->
                             <div class="flex flex-col items-center p-6 animated-item stagger-3 card rounded-2xl">
-                                <div class="flex items-center justify-center h-16 w-16 rounded-full bg-[#5091cd] text-white text-2xl font-bold mb-4 shadow-lg">2</div>
+                                <div class="flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-[#5091cd] to-[#437aae] text-white text-2xl font-bold mb-4 shadow-lg icon-container">2</div>
                                 <h3 class="text-xl font-semibold mb-2">Instant Analysis</h3>
                                 <p>Our algorithm analyzes your responses against key psychological traits in real-time.</p>
                             </div>
                             <!-- Step 3 -->
                             <div class="flex flex-col items-center p-6 animated-item stagger-4 card rounded-2xl">
-                                <div class="flex items-center justify-center h-16 w-16 rounded-full bg-[#5091cd] text-white text-2xl font-bold mb-4 shadow-lg">3</div>
+                                <div class="flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-[#5091cd] to-[#437aae] text-white text-2xl font-bold mb-4 shadow-lg icon-container">3</div>
                                 <h3 class="text-xl font-semibold mb-2">Reveal Your Profile</h3>
                                 <p>Receive a detailed report of your personality type, strengths, and potential career paths.</p>
                             </div>
@@ -71,10 +72,10 @@
                     <div class="max-w-5xl mx-auto px-6 lg:px-8 text-center">
                         <h2 class="text-3xl sm:text-4xl font-bold mb-4 animated-item">Unlock a Deeper Understanding of Yourself</h2>
                          <p class="text-lg max-w-2xl mx-auto mb-12 animated-item stagger-1">This isn't just a test; it's a tool for personal and professional growth.</p>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-10 interactive-cards">
                             <!-- Feature 1 -->
                             <div class="text-center p-6 animated-item stagger-2 card rounded-2xl">
-                                <div class="flex justify-center mb-4">
+                                <div class="flex justify-center mb-4 icon-container">
                                     <svg class="h-12 w-12 text-[#5091cd]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                 </div>
                                 <h3 class="text-xl font-semibold mb-2">Identify Strengths</h3>
@@ -82,7 +83,7 @@
                             </div>
                             <!-- Feature 2 -->
                             <div class="text-center p-6 animated-item stagger-3 card rounded-2xl">
-                                <div class="flex justify-center mb-4">
+                                <div class="flex justify-center mb-4 icon-container">
                                      <svg class="h-12 w-12 text-[#5091cd]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                                 </div>
                                 <h3 class="text-xl font-semibold mb-2">Career Guidance</h3>
@@ -90,7 +91,7 @@
                             </div>
                             <!-- Feature 3 -->
                             <div class="text-center p-6 animated-item stagger-4 card rounded-2xl">
-                                <div class="flex justify-center mb-4">
+                                <div class="flex justify-center mb-4 icon-container">
                                     <svg class="h-12 w-12 text-[#5091cd]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                                 </div>
                                 <h3 class="text-xl font-semibold mb-2">Improve Relationships</h3>
@@ -101,7 +102,7 @@
                 </section>
                 
                 <!-- Final CTA Section -->
-                 <section id="start-test" class="py-16 sm:py-24 bg-white/70">
+                 <section id="start-test" class="py-16 sm:py-24 bg-white/80">
                     <div class="max-w-3xl mx-auto px-6 lg:px-8 text-center">
                         <h2 class="text-3xl sm:text-4xl font-bold mb-6 animated-item">Ready to Discover Your Path?</h2>
                         <p class="text-lg mb-8 animated-item stagger-1">Your detailed personality report is just a few minutes away. Start now to gain valuable insights that can shape your future.</p>
@@ -174,7 +175,7 @@
                             <p id="result-careers" class="leading-relaxed"></p>
                         </div>
                         <div>
-                             <div class="flex items-center bg-[#5091cd] text-white p-5 rounded-2xl shadow-lg">
+                             <div class="flex items-center bg-gradient-to-br from-[#5091cd] to-[#437aae] text-white p-5 rounded-2xl shadow-lg">
                                 <svg class="w-16 h-16 mr-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3V3z"/></svg>
                                 <div>
                                     <p class="text-sm opacity-80">Your Personal Anthem</p>
