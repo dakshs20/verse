@@ -3,368 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MienMe - Discover Your Personality</title>
-    <!-- Tailwind CSS -->
+    <title>Dynamic Personality Test</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Stripe.js -->
-    <script src="https://js.stripe.com/v3/"></script>
-    <!-- jsPDF for downloading results -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- Custom Stylesheet -->
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5;
-        }
-        .fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .custom-radio input[type="radio"] { display: none; }
-        .custom-radio label { transition: all 0.2s ease-in-out; cursor: pointer; }
-        .custom-radio input[type="radio"]:checked + label {
-            background-color: #4f46e5;
-            color: white;
-            border-color: #4f46e5;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
-        }
-        .spinner {
-            border-color: #4f46e5;
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Style for the blurred results */
-        .blurred-results {
-            filter: blur(8px);
-            user-select: none;
-            pointer-events: none;
-            transition: filter 0.3s ease-in-out;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="text-gray-800">
 
-    <div id="app" class="min-h-screen flex flex-col items-center justify-center p-4">
-
-        <!-- Landing Page -->
-        <main id="page-landing" class="text-center max-w-2xl mx-auto fade-in">
-            <header class="mb-8">
-                <h1 class="text-5xl md:text-6xl font-extrabold text-gray-900 mb-2">MienMe</h1>
-                <p class="text-xl md:text-2xl text-indigo-600 font-semibold">Unlock Your True Self.</p>
+    <div id="app">
+        <!-- Landing Page Container -->
+        <div id="landing-page" class="page">
+            <header id="header" class="fixed top-0 left-0 right-0 z-50 p-4">
+                <div id="header-content" class="max-w-6xl mx-auto flex justify-between items-center">
+                    <img src="https://i.ibb.co/TDcKJZYm/genart-image-98-removebg-preview.png" alt="Logo" class="h-20 w-auto">
+                    <nav class="hidden md:flex items-center space-x-1">
+                        <a href="#how-it-works" class="px-4 py-2 rounded-full text-gray-600 font-medium hover:bg-white/70 hover:text-[#2c3e50] transition-colors duration-300">How It Works</a>
+                        <a href="#features" class="px-4 py-2 rounded-full text-gray-600 font-medium hover:bg-white/70 hover:text-[#2c3e50] transition-colors duration-300">Features</a>
+                        <a href="#start-test" class="px-4 py-2 rounded-full text-gray-600 font-medium hover:bg-white/70 hover:text-[#2c3e50] transition-colors duration-300">Start Test</a>
+                    </nav>
+                </div>
             </header>
-            <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
-                <p class="text-lg text-gray-600 mb-6">
-                    MienMe is a comprehensive, AI-driven personality assessment designed to provide deep insights into who you are. Answer a series of carefully crafted questions to receive a detailed analysis of your unique personality traits, strengths, and potential areas for growth.
-                </p>
-                <button id="start-test-btn" class="w-full bg-indigo-600 text-white font-bold py-4 px-8 rounded-lg text-xl hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition-transform transform hover:scale-105">
-                    Start The Free Test
-                </button>
-            </div>
-             <footer class="mt-8 text-gray-500 text-sm">
-                <p>&copy; 2025 MienMe. All rights reserved.</p>
-            </footer>
-        </main>
 
-        <!-- Test Page -->
-        <section id="page-test" class="hidden w-full max-w-3xl fade-in">
-            <div class="bg-white p-6 md:p-10 rounded-2xl shadow-xl border border-gray-200">
-                <div class="mb-8">
-                    <div class="flex justify-between items-center mb-2">
-                        <p class="text-indigo-600 font-semibold">Question <span id="question-number">1</span> of <span id="total-questions">40</span></p>
-                        <p id="progress-percent" class="font-bold text-gray-700">0%</p>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-3">
-                        <div id="progress-bar" class="bg-indigo-600 h-3 rounded-full transition-all duration-300" style="width: 0%;"></div>
-                    </div>
-                </div>
-                <div id="question-container">
-                    <h2 id="question-text" class="text-2xl md:text-3xl font-bold mb-8 text-gray-900 min-h-[100px]"></h2>
-                    <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 custom-radio"></div>
-                </div>
-                <div class="mt-10 flex justify-between items-center">
-                    <button id="back-question-btn" class="bg-gray-300 text-gray-500 font-bold py-3 px-10 rounded-lg transition-colors">Back</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Results Page with Integrated Payment -->
-        <section id="page-results" class="hidden w-full max-w-3xl fade-in">
-            <div class="bg-white p-6 md:p-10 rounded-2xl shadow-xl border border-gray-200">
-                <header class="text-center mb-8 border-b pb-6 border-gray-200">
-                    <h2 class="text-4xl font-extrabold text-indigo-600 mb-2">Your Personality Analysis</h2>
-                    <p class="text-lg text-gray-600">Based on your answers, here is your AI-generated profile.</p>
-                </header>
-
-                <div id="results-container" class="relative">
-                    <!-- AI result will be injected here -->
-                    <div id="results-content" class="prose prose-lg max-w-none text-gray-700"></div>
-
-                    <!-- Payment Overlay -->
-                    <div id="payment-overlay" class="hidden absolute inset-0 bg-white bg-opacity-80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center rounded-lg">
-                        <div class="w-full max-w-sm">
-                            <svg class="mx-auto h-12 w-12 text-indigo-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H4.5a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
-                            <h3 class="text-2xl font-bold text-gray-900">Unlock Your Full Analysis</h3>
-                            <p class="text-gray-600 my-4">Your detailed AI-powered personality analysis is ready. Make a one-time payment to reveal your results.</p>
-                            <div class="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-3 my-4">
-                                <p class="text-3xl font-bold text-indigo-600">$2.99</p>
-                                <p class="text-sm text-indigo-500">One-Time Payment</p>
-                            </div>
-                            <form id="payment-form">
-                                <div id="payment-element" class="mb-4"></div>
-                                <button id="submit-payment-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg text-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition-transform transform hover:scale-105">
-                                     <span id="button-text">Pay and Reveal Results</span>
-                                     <div id="payment-spinner" class="spinner w-5 h-5 border-2 rounded-full mx-auto hidden"></div>
-                                </button>
-                                <div id="payment-message" class="hidden mt-3 text-red-500"></div>
-                            </form>
+            <main>
+                <!-- Hero Section -->
+                <section class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 text-center">
+                    <div class="w-full max-w-2xl">
+                        <div class="bg-white/60 backdrop-blur-sm p-8 sm:p-12 rounded-3xl border border-gray-200 shadow-xl">
+                            <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 mb-4 animated-item stagger-1">Discover the Real You</h1>
+                            <p class="text-lg text-gray-600 mb-8 animated-item stagger-2">Take our 25-question personality test and uncover your true traits, strengths, and hidden potentials.</p>
+                            <button id="start-btn-hero" class="btn-primary py-3 px-8 text-lg rounded-xl animated-item stagger-3">Begin the Journey</button>
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <div id="download-section" class="mt-10 text-center hidden">
-                    <button id="download-results-btn" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition-transform transform hover:scale-105">
-                        Download as PDF
+                <!-- How It Works Section -->
+                <section id="how-it-works" class="py-16 sm:py-24 bg-white/70">
+                    <div class="max-w-5xl mx-auto px-6 lg:px-8 text-center">
+                        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 animated-item">A Simple Path to Self-Discovery</h2>
+                        <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-12 animated-item stagger-1">Our process is straightforward, insightful, and designed to provide you with immediate value.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <!-- Step 1 -->
+                            <div class="flex flex-col items-center p-6 animated-item stagger-2 card rounded-2xl">
+                                <div class="flex items-center justify-center h-16 w-16 rounded-full bg-[#2c3e50] text-white text-2xl font-bold mb-4 shadow-lg">1</div>
+                                <h3 class="text-xl font-semibold mb-2">Answer 25 Questions</h3>
+                                <p class="text-gray-600">Respond to each statement honestly on a five-point scale from "Strongly Agree" to "Strongly Disagree".</p>
+                            </div>
+                            <!-- Step 2 -->
+                            <div class="flex flex-col items-center p-6 animated-item stagger-3 card rounded-2xl">
+                                <div class="flex items-center justify-center h-16 w-16 rounded-full bg-[#2c3e50] text-white text-2xl font-bold mb-4 shadow-lg">2</div>
+                                <h3 class="text-xl font-semibold mb-2">Instant Analysis</h3>
+                                <p class="text-gray-600">Our algorithm analyzes your responses against key psychological traits in real-time.</p>
+                            </div>
+                            <!-- Step 3 -->
+                            <div class="flex flex-col items-center p-6 animated-item stagger-4 card rounded-2xl">
+                                <div class="flex items-center justify-center h-16 w-16 rounded-full bg-[#2c3e50] text-white text-2xl font-bold mb-4 shadow-lg">3</div>
+                                <h3 class="text-xl font-semibold mb-2">Reveal Your Profile</h3>
+                                <p class="text-gray-600">Receive a detailed report of your personality type, strengths, and potential career paths.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Features Section -->
+                <section id="features" class="py-16 sm:py-24">
+                    <div class="max-w-5xl mx-auto px-6 lg:px-8 text-center">
+                        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 animated-item">Unlock a Deeper Understanding of Yourself</h2>
+                         <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-12 animated-item stagger-1">This isn't just a test; it's a tool for personal and professional growth.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                            <!-- Feature 1 -->
+                            <div class="text-center p-6 animated-item stagger-2 card rounded-2xl">
+                                <div class="flex justify-center mb-4">
+                                    <svg class="h-12 w-12 text-[#2c3e50]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                </div>
+                                <h3 class="text-xl font-semibold mb-2">Identify Strengths</h3>
+                                <p class="text-gray-600">Discover your core strengths and learn how to leverage them in your daily life.</p>
+                            </div>
+                            <!-- Feature 2 -->
+                            <div class="text-center p-6 animated-item stagger-3 card rounded-2xl">
+                                <div class="flex justify-center mb-4">
+                                     <svg class="h-12 w-12 text-[#2c3e50]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                </div>
+                                <h3 class="text-xl font-semibold mb-2">Career Guidance</h3>
+                                <p class="text-gray-600">Get career suggestions that align with your natural tendencies and passions.</p>
+                            </div>
+                            <!-- Feature 3 -->
+                            <div class="text-center p-6 animated-item stagger-4 card rounded-2xl">
+                                <div class="flex justify-center mb-4">
+                                    <svg class="h-12 w-12 text-[#2c3e50]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                </div>
+                                <h3 class="text-xl font-semibold mb-2">Improve Relationships</h3>
+                                <p class="text-gray-600">Understand how you interact with others to build better, more meaningful connections.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Final CTA Section -->
+                 <section id="start-test" class="py-16 sm:py-24 bg-white/70">
+                    <div class="max-w-3xl mx-auto px-6 lg:px-8 text-center">
+                        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-6 animated-item">Ready to Discover Your Path?</h2>
+                        <p class="text-lg text-gray-600 mb-8 animated-item stagger-1">Your detailed personality report is just a few minutes away. Start now to gain valuable insights that can shape your future.</p>
+                        <button id="start-btn-cta" class="btn-primary py-3 px-8 text-lg rounded-xl animated-item stagger-2">Take the Test Now</button>
+                    </div>
+                </section>
+            </main>
+
+            <footer class="bg-[#2c3e50] text-white text-center p-6 rounded-t-3xl shadow-inner">
+                <p>&copy; 2025 MienMe By GenArtML Private Limited. All Rights Reserved.</p>
+            </footer>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="page hidden min-h-screen flex flex-col items-center justify-center p-4 sm:p-6">
+            <div class="w-full max-w-3xl">
+                <div class="card p-8 sm:p-10 rounded-3xl relative">
+                    <button id="back-to-home-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors duration-300" aria-label="Back to Home">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h7.5"/>
+                        </svg>
                     </button>
+                    <!-- Progress Bar -->
+                    <div class="mb-6">
+                        <p id="question-counter" class="text-sm text-center text-gray-500 mb-2">Statement 1 of 25</p>
+                        <div class="progress-bar-bg w-full h-2 rounded-full overflow-hidden">
+                            <div id="progress-bar" class="progress-bar h-2" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Question -->
+                    <h2 id="question-text" class="text-2xl sm:text-3xl font-semibold text-center text-gray-800 mb-8" style="min-height: 80px;"></h2>
+
+                    <!-- Options -->
+                    <div id="options-container" class="grid grid-cols-1 sm:grid-cols-5 gap-2 sm:gap-4">
+                        <button class="btn-option w-full p-3 rounded-xl text-sm sm:text-base" data-value="2">Strongly Agree</button>
+                        <button class="btn-option w-full p-3 rounded-xl text-sm sm:text-base" data-value="1">Agree</button>
+                        <button class="btn-option w-full p-3 rounded-xl text-sm sm:text-base" data-value="0">Neutral</button>
+                        <button class="btn-option w-full p-3 rounded-xl text-sm sm:text-base" data-value="-1">Disagree</button>
+                        <button class="btn-option w-full p-3 rounded-xl text-sm sm:text-base" data-value="-2">Strongly Disagree</button>
+                    </div>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- Loading Spinner -->
-        <div id="loading-spinner" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
-            <div class="text-center text-white">
-                <div class="spinner w-12 h-12 border-4 rounded-full mx-auto mb-4"></div>
-                <p id="loading-text" class="text-xl font-semibold">Loading...</p>
+        <!-- Result Screen -->
+        <div id="result-screen" class="page hidden min-h-screen flex flex-col items-center justify-center p-4 sm:p-6">
+             <div class="w-full max-w-4xl">
+                <div class="card p-8 sm:p-12 rounded-3xl">
+                    <div class="text-center">
+                        <p class="text-gray-500 mb-2">Your Personality Type Is</p>
+                        <h1 id="result-type" class="text-6xl sm:text-7xl font-bold text-gray-900"></h1>
+                        <h2 id="result-title" class="text-3xl sm:text-4xl font-semibold text-[#34495e] mt-2 mb-8"></h2>
+                    </div>
+                    
+                    <div class="text-left max-w-3xl mx-auto space-y-8">
+                        <!-- Trait Breakdown -->
+                        <div>
+                            <h3 class="text-xl font-bold mb-4 border-b-2 border-gray-200 pb-2 text-center">Your Preferences</h3>
+                            <div id="trait-breakdown" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- This will be populated by JS -->
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-3 border-b-2 border-gray-200 pb-2 flex items-center"><svg class="w-6 h-6 mr-3 text-[#34495e]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>Profile Description</h3>
+                            <p id="result-description" class="text-gray-700 leading-relaxed"></p>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-3 border-b-2 border-gray-200 pb-2 flex items-center"><svg class="w-6 h-6 mr-3 text-[#34495e]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>Potential Career Paths</h3>
+                            <p id="result-careers" class="text-gray-700 leading-relaxed"></p>
+                        </div>
+                        <div>
+                             <div class="flex items-center bg-gradient-to-r from-[#2c3e50] to-[#34495e] text-white p-5 rounded-2xl shadow-lg">
+                                <svg class="w-16 h-16 mr-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3V3z"/></svg>
+                                <div>
+                                    <p class="text-sm opacity-80">Your Personal Anthem</p>
+                                    <p id="result-song-name" class="font-bold text-2xl"></p>
+                                    <p id="result-song-artist" class="text-lg opacity-90"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                      <button id="retake-btn" class="btn-primary mt-12 py-3 px-8 text-lg rounded-xl">Take the Test Again</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Main Application Logic -->
-    <script type="module">
-        // --- CONFIGURATION ---
-        const STRIPE_PUBLISHABLE_KEY = 'pk_live_51SFpdLLaWqqtMQvqyJ9TVUt4ZTCm9o9YFQEpQNANXjapIk8JPqCUJh0sxE4HV6TVuPh6VipeYcI4tKQgRP4GZpf5007J2qH1ba';
-        const BACKEND_URL = 'http://localhost:3000';
-        const CREATE_PAYMENT_INTENT_ENDPOINT = `${BACKEND_URL}/create-payment-intent`;
-        const GET_PERSONALITY_RESULT_ENDPOINT = `${BACKEND_URL}/get-personality-result`;
-
-        // --- QUESTIONS DATA ---
-        const questionsData = [{"question":"When you enter a room full of people, you tend to:","options":[{"text":"Stay near the walls and observe","score":1},{"text":"Wait for someone to approach you","score":2},{"text":"Select a small group and join them","score":3},{"text":"Introduce yourself to several people","score":4},{"text":"Become the center of attention","score":5}]},{"question":"You are more drawn to:","options":[{"text":"Facts and concrete details","score":1},{"text":"Practical applications","score":2},{"text":"A mix of both ideas and practicality","score":3},{"text":"Abstract ideas and theories","score":4},{"text":"Future possibilities and patterns","score":5}]},{"question":"When making important decisions, you prioritize:","options":[{"text":"Objective logic and principles","score":1},{"text":"Efficiency and effectiveness","score":2},{"text":"A balance of logic and feelings","score":3},{"text":"How it will affect others' feelings","score":4},{"text":"Personal values and harmony","score":5}]},{"question":"Your ideal weekend involves:","options":[{"text":"A detailed itinerary planned in advance","score":1},{"text":"A few scheduled activities","score":2},{"text":"A general plan but with flexibility","score":3},{"text":"Seeing where the day takes you","score":4},{"text":"Complete spontaneity and new adventures","score":5}]},{"question":"You feel most energized after:","options":[{"text":"Spending a quiet day alone","score":1},{"text":"A quiet coffee with one close friend","score":2},{"text":"A balanced day of alone time and social activity","score":3},{"text":"A small get-together with friends","score":4},{"text":"A large, lively party or event","score":5}]},{"question":"When working on a project, you prefer to:","options":[{"text":"Follow established methods step-by-step","score":1},{"text":"Use reliable, proven techniques","score":2},{"text":"Adapt methods as you go","score":3},{"text":"Brainstorm new and innovative approaches","score":4},{"text":"Come up with a completely original solution","score":5}]},{"question":"In a disagreement, you are more likely to:","options":[{"text":"Focus on the logical inconsistencies of the argument","score":1},{"text":"Look for a fair and just solution","score":2},{"text":"Try to see both sides of the issue","score":3},{"text":"Ensure everyone feels heard and respected","score":4},{"text":"Prioritize maintaining a harmonious relationship","score":5}]},{"question":"Your workspace is typically:","options":[{"text":"Neat, organized, and everything has a place","score":1},{"text":"Mostly organized with a few piles","score":2},{"text":"An organized chaos I can navigate","score":3},{"text":"Cluttered but functional","score":4},{"text":"A creative mess that inspires you","score":5}]},{"question":"You prefer to learn by:","options":[{"text":"Quietly reading and reflecting on your own","score":1},{"text":"Observing others and then trying it yourself","score":2},{"text":"A combination of instruction and practice","score":3},{"text":"Discussing ideas in a group setting","score":4},{"text":"Jumping in and learning through trial and error","score":5}]},{"question":"You trust your:","options":[{"text":"Past experiences and what has worked before","score":1},{"text":"Practical judgment","score":2},{"text":"A balance of intuition and experience","score":3},{"text":"Intuition and gut feelings","score":4},{"text":"Vision for what could be","score":5}]},{"question":"When a friend is upset, you are more likely to:","options":[{"text":"Offer practical solutions to their problem","score":1},{"text":"Analyze the situation to find the root cause","score":2},{"text":"Listen and offer solutions","score":3},{"text":"Listen patiently and offer emotional support","score":4},{"text":"Empathize deeply and share their feelings","score":5}]},{"question":"Meeting deadlines is:","options":[{"text":"Crucial. You always finish work well in advance.","score":1},{"text":"Important. You are usually on time.","score":2},{"text":"Something you manage, sometimes with a final push.","score":3},{"text":"A guideline. You work best under pressure.","score":4},{"text":"Stressful. You prefer open-ended tasks.","score":5}]},{"question":"When thinking, you tend to:","options":[{"text":"Process internally before speaking","score":1},{"text":"Think for a moment, then share your thoughts","score":2},{"text":"Mix internal processing and talking it out","score":3},{"text":"Talk through your ideas to understand them","score":4},{"text":"Think out loud, developing ideas as you speak","score":5}]},{"question":"You are more interested in a product's:","options":[{"text":"Specific features and how it works","score":1},{"text":"Reliability and user reviews","score":2},{"text":"Overall design and function","score":3},{"text":"The new possibilities it opens up","score":4},{"text":"The innovative concept behind it","score":5}]},{"question":"It's more important to be:","options":[{"text":"Correct and accurate","score":1},{"text":"Fair and just","score":2},{"text":"Both just and kind","score":3},{"text":"Compassionate and understanding","score":4},{"text":"Kind and considerate","score":5}]},{"question":"When on vacation, you prefer to:","options":[{"text":"Have a well-structured plan and stick to it","score":1},{"text":"Have a loose plan of key sights to see","score":2},{"text":"Plan the first few days, then see what happens","score":3},{"text":"Have a destination but no set plans","score":4},{"text":"Explore spontaneously with no itinerary","score":5}]},{"question":"Which statement describes you better?","options":[{"text":"I have a few very deep friendships.","score":1},{"text":"I have several close friends.","score":2},{"text":"I have a mix of deep and casual friends.","score":3},{"text":"I have a wide circle of friends and acquaintances.","score":4},{"text":"I make new friends easily wherever I go.","score":5}]},{"question":"When solving a problem, you first:","options":[{"text":"Gather all the facts and data","score":1},{"text":"Identify the practical steps to solve it","score":2},{"text":"Look at the problem from different angles","score":3},{"text":"Imagine various potential outcomes","score":4},{"text":"Brainstorm a wide range of creative possibilities","score":5}]},{"question":"You are more likely to be seen as:","options":[{"text":"Analytical and level-headed","score":1},{"text":"Decisive and clear","score":2},{"text":"Thoughtful and balanced","score":3},{"text":"Warm and encouraging","score":4},{"text":"Empathetic and supportive","score":5}]},{"question":"You prefer your life to be:","options":[{"text":"Settled and predictable","score":1},{"text":"Organized and planned","score":2},{"text":"A mix of routine and spontaneity","score":3},{"text":"Flexible and adaptable","score":4},{"text":"Full of surprises and new experiences","score":5}]},{"question":"At work, you get more satisfaction from:","options":[{"text":"Deeply focusing on a single, complex task","score":1},{"text":"Completing a project with a clear outcome","score":2},{"text":"A mix of solo work and collaboration","score":3},{"text":"Collaborating with a team on a shared goal","score":4},{"text":"Leading and motivating a team","score":5}]},{"question":"You are more impressed by:","options":[{"text":"Technical skill and mastery of a craft","score":1},{"text":"Efficiency and practical results","score":2},{"text":"A combination of skill and vision","score":3},{"text":"Originality and a unique vision","score":4},{"text":"Inspiration and creative genius","score":5}]},{"question":"When giving feedback, you tend to be:","options":[{"text":"Direct, objective, and focused on improvement","score":1},{"text":"Candid and straightforward","score":2},{"text":"Balanced, starting with positives then areas for improvement","score":3},{"text":"Encouraging and focused on the person's strengths","score":4},{"text":"Diplomatic, gentle, and concerned about feelings","score":5}]},{"question":"You enjoy tasks that have:","options":[{"text":"Clear goals and a definite conclusion","score":1},{"text":"A sense of completion when finished","score":2},{"text":"A mix of defined goals and open exploration","score":3},{"text":"The flexibility to change direction as you work","score":4},{"text":"The freedom to explore without a fixed outcome","score":5}]},{"question":"In a group discussion, you are more likely to:","options":[{"text":"Listen carefully to all points before speaking","score":1},{"text":"Contribute once you have formulated your thoughts","score":2},{"text":"Listen and contribute throughout the discussion","score":3},{"text":"Jump in with ideas to move the conversation forward","score":4},{"text":"Facilitate the conversation and share lots of ideas","score":5}]},{"question":"You prefer stories that are:","options":[{"text":"Realistic and based on true events","score":1},{"text":"Grounded and believable","score":2},{"text":"A mix of realism and imagination","score":3},{"text":"Symbolic and full of meaning","score":4},{"text":"Highly imaginative and conceptual","score":5}]},{"question":"It's worse to be seen as:","options":[{"text":"Illogical","score":1},{"text":"Inefficient","score":2},{"text":"Unbalanced","score":3},{"text":"Uncaring","score":4},{"text":"Conflict-driven","score":5}]},{"question":"When starting a new project, you feel:","options":[{"text":"Anxious until there's a clear plan","score":1},{"text":"Motivated to create a schedule and checklist","score":2},{"text":"A mix of excitement and a desire for structure","score":3},{"text":"Excited by the possibilities and new ideas","score":4},{"text":"Energized by the freedom to explore and create","score":5}]},{"question":"You find it easy to:","options":[{"text":"Concentrate in a quiet environment","score":1},{"text":"Focus on your own thoughts","score":2},{"text":"Switch between solo work and group work","score":3},{"text":"Start conversations with strangers","score":4},{"text":"Be the life of the party","score":5}]},{"question":"You would rather be known as:","options":[{"text":"A reliable and sensible person","score":1},{"text":"A practical and down-to-earth person","score":2},{"text":"Someone who is both practical and creative","score":3},{"text":"A creative and insightful person","score":4},{"text":"A visionary and innovative person","score":5}]},{"question":"You feel a greater sense of pride from:","options":[{"text":"Building something that is logically sound and efficient","score":1},{"text":"Making a system work better","score":2},{"text":"Finding a solution that helps people practically","score":3},{"text":"Helping someone achieve their potential","score":4},{"text":"Creating a positive and harmonious community","score":5}]},{"question":"Your approach to decision-making is to:","options":[{"text":"Decide quickly and move on","score":1},{"text":"Weigh the pros and cons, then decide","score":2},{"text":"Consider the options for a while","score":3},{"text":"Keep your options open as long as possible","score":4},{"text":"Struggle with making a final choice","score":5}]},{"question":"Being in a loud, busy environment for too long makes you feel:","options":[{"text":"Completely drained and overwhelmed","score":1},{"text":"Tired and in need of a break","score":2},{"text":"Sometimes tired, sometimes energized","score":3},{"text":"Stimulated and engaged","score":4},{"text":"Energized and excited","score":5}]},{"question":"In conversations, you are more likely to:","options":[{"text":"Talk about specific details and events","score":1},{"text":"Discuss practical matters and experiences","score":2},{"text":"Move between concrete topics and ideas","score":3},{"text":"Explore underlying meanings and connections","score":4},{"text":"Talk about theories and abstract concepts","score":5}]},{"question":"You believe that truth should be pursued:","options":[{"text":"Regardless of how it makes people feel","score":1},{"text":"With objectivity and impartiality","score":2},{"text":"With a balance of truth and tact","score":3},{"text":"With compassion and sensitivity","score":4},{"text":"With harmony as the ultimate goal","score":5}]},{"question":"You feel more comfortable when:","options":[{"text":"You know exactly what to expect","score":1},{"text":"Things are settled and decided","score":2},{"text":"There is a plan, but it's flexible","score":3},{"text":"You can adapt to new information","score":4},{"text":"Things are open-ended and full of possibility","score":5}]},{"question":"You often find yourself:","options":[{"text":"Lost in thought, even in a group","score":1},{"text":"Needing time alone to recharge","score":2},{"text":"Enjoying both social time and solitude","score":3},{"text":"Seeking out social interaction","score":4},{"text":"Feeling bored when you're by yourself for too long","score":5}]},{"question":"When describing an event, you focus on:","options":[{"text":"What literally happened, in sequential order","score":1},{"text":"The key facts and details","score":2},{"text":"The overall experience and key details","score":3},{"text":"The overall impression and meaning it had for you","score":4},{"text":"The underlying themes and patterns","score":5}]},{"question":"You are more firm about:","options":[{"text":"Your principles and logical conclusions","score":1},{"text":"What you think is fair and effective","score":2},{"text":"Finding a middle ground","score":3},{"text":"What you believe is right for people","score":4},{"text":"Your deeply held personal values","score":5}]},{"question":"On a typical weekday, you prefer to:","options":[{"text":"Follow a consistent, productive routine","score":1},{"text":"Work through a to-do list","score":2},{"text":"Have a routine but welcome interesting detours","score":3},{"text":"Handle tasks as they arise","score":4},{"text":"Embrace a flexible day driven by inspiration","score":5}]}];
-
-        // --- STATE MANAGEMENT ---
-        let questions = [];
-        let currentQuestionIndex = 0;
-        let userAnswers = {};
-        let stripe, elements;
-
-        // --- DOM ELEMENTS ---
-        const pages = { landing: document.getElementById('page-landing'), test: document.getElementById('page-test'), results: document.getElementById('page-results') };
-        const startTestBtn = document.getElementById('start-test-btn');
-        const questionNumberEl = document.getElementById('question-number');
-        const totalQuestionsEl = document.getElementById('total-questions');
-        const questionTextEl = document.getElementById('question-text');
-        const optionsContainerEl = document.getElementById('options-container');
-        const progressBarEl = document.getElementById('progress-bar');
-        const progressPercentEl = document.getElementById('progress-percent');
-        const backQuestionBtn = document.getElementById('back-question-btn');
-        const loadingSpinner = document.getElementById('loading-spinner');
-        const loadingText = document.getElementById('loading-text');
-        const resultsContentEl = document.getElementById('results-content');
-        const paymentOverlay = document.getElementById('payment-overlay');
-        const paymentForm = document.getElementById('payment-form');
-        const submitPaymentBtn = document.getElementById('submit-payment-btn');
-        const paymentMessage = document.getElementById('payment-message');
-        const downloadSection = document.getElementById('download-section');
-        const downloadResultsBtn = document.getElementById('download-results-btn');
-
-        // --- APPLICATION LOGIC ---
-        const showPage = (pageId) => {
-            Object.values(pages).forEach(page => page.classList.add('hidden'));
-            pages[pageId].classList.remove('hidden');
-            window.scrollTo(0, 0);
-        };
-
-        const showLoader = (show, text = 'Loading...') => {
-            loadingText.textContent = text;
-            loadingSpinner.classList.toggle('hidden', !show);
-        };
-
-        const initialize = () => {
-            questions = questionsData;
-            totalQuestionsEl.textContent = questions.length;
-            setupEventListeners();
-            showPage('landing');
-        };
-
-        const setupEventListeners = () => {
-            startTestBtn.addEventListener('click', startTest);
-            backQuestionBtn.addEventListener('click', handlePreviousQuestion);
-            paymentForm.addEventListener('submit', handlePaymentSubmit);
-            downloadResultsBtn.addEventListener('click', downloadResultsAsPDF);
-        };
-
-        const startTest = () => {
-            currentQuestionIndex = 0;
-            userAnswers = {};
-            showPage('test');
-            displayQuestion();
-        };
-
-        const displayQuestion = () => {
-            if (currentQuestionIndex >= questions.length) {
-                finishTest();
-                return;
-            }
-            const question = questions[currentQuestionIndex];
-            questionNumberEl.textContent = currentQuestionIndex + 1;
-            questionTextEl.textContent = question.question;
-            optionsContainerEl.innerHTML = '';
-            question.options.forEach(option => {
-                const optionId = `q${currentQuestionIndex}_${option.score}`;
-                const isChecked = userAnswers[currentQuestionIndex] === option.score;
-                optionsContainerEl.innerHTML += `
-                    <div>
-                        <input type="radio" name="question${currentQuestionIndex}" id="${optionId}" value="${option.score}" ${isChecked ? 'checked' : ''}>
-                        <label for="${optionId}" class="block w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50">${option.text}</label>
-                    </div>`;
-            });
-            optionsContainerEl.querySelectorAll('input[type="radio"]').forEach(radio => radio.addEventListener('change', handleAnswerSelection));
-            updateProgress();
-            backQuestionBtn.disabled = currentQuestionIndex === 0;
-            backQuestionBtn.classList.toggle('opacity-50', currentQuestionIndex === 0);
-        };
-
-        const handleAnswerSelection = (event) => {
-            userAnswers[currentQuestionIndex] = parseInt(event.target.value);
-            setTimeout(() => handleNextQuestion(), 300);
-        };
-
-        const handleNextQuestion = () => {
-            currentQuestionIndex++;
-            displayQuestion();
-        };
-
-        const handlePreviousQuestion = () => {
-            if (currentQuestionIndex > 0) {
-                currentQuestionIndex--;
-                displayQuestion();
-            }
-        };
-
-        const updateProgress = () => {
-            const percent = ((currentQuestionIndex) / questions.length) * 100;
-            progressBarEl.style.width = `${percent}%`;
-            progressPercentEl.textContent = `${Math.round(percent)}%`;
-        };
-
-        const finishTest = () => {
-            progressBarEl.style.width = `100%`;
-            progressPercentEl.textContent = `100%`;
-            fetchAiResultsAndInitializePayment();
-        };
-
-        const fetchAiResultsAndInitializePayment = async () => {
-            showLoader(true, 'Analyzing your personality...');
-            try {
-                // Step 1: Fetch the AI-generated results
-                const resultsResponse = await fetch(GET_PERSONALITY_RESULT_ENDPOINT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ answers: userAnswers })
-                });
-
-                if (!resultsResponse.ok) throw new Error('Failed to get analysis from AI service.');
-                
-                const { result } = await resultsResponse.json();
-                resultsContentEl.innerHTML = result.replace(/\n/g, '<br>');
-                resultsContentEl.classList.add('blurred-results');
-                downloadSection.classList.add('hidden');
-
-                // Step 2: Fetch the payment client secret
-                const paymentResponse = await fetch(CREATE_PAYMENT_INTENT_ENDPOINT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: 299, currency: 'usd' })
-                });
-
-                if (!paymentResponse.ok) throw new Error('Failed to create payment intent.');
-
-                const { clientSecret } = await paymentResponse.json();
-                
-                // Step 3: Setup Stripe and show the page
-                stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
-                elements = stripe.elements({ appearance: { theme: 'stripe' }, clientSecret });
-                const paymentElement = elements.create("payment");
-                paymentElement.mount("#payment-element");
-
-                showPage('results');
-                paymentOverlay.classList.remove('hidden');
-
-            } catch (error) {
-                console.error("Error during results/payment fetch:", error);
-                const appContainer = document.getElementById('app');
-                appContainer.innerHTML = `<div class="text-center max-w-md mx-auto bg-white p-8 rounded-lg shadow-md"><h2 class="text-2xl font-bold text-red-600 mb-4">Connection Error</h2><p class="text-gray-700">Could not connect to the server. Please ensure the backend server is running and the URL is correct, then refresh the page.</p><p class="text-gray-500 text-sm mt-4">Error: ${error.message}</p></div>`;
-            } finally {
-                showLoader(false);
-            }
-        };
-
-        const handlePaymentSubmit = async (event) => {
-            event.preventDefault();
-            setPaymentLoading(true);
-
-            const { error } = await stripe.confirmPayment({
-                elements,
-                confirmParams: { return_url: window.location.href.split('?')[0] },
-                redirect: 'if_required' 
-            });
-
-            if (error) {
-                showMessage(error.type === "card_error" || error.type === "validation_error" ? error.message : "An unexpected error occurred.");
-                setPaymentLoading(false);
-            } else {
-                // Payment succeeded! Unblur the results.
-                paymentOverlay.classList.add('hidden');
-                resultsContentEl.classList.remove('blurred-results');
-                downloadSection.classList.remove('hidden');
-            }
-        };
-
-        const downloadResultsAsPDF = () => {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const content = resultsContentEl.innerText;
-            doc.setFont('Helvetica', 'bold');
-            doc.setFontSize(22);
-            doc.text('Your MienMe Personality Analysis', 105, 20, null, null, 'center');
-            doc.setFont('Helvetica', 'normal');
-            doc.setFontSize(12);
-            const splitText = doc.splitTextToSize(content, 180);
-            doc.text(splitText, 15, 40);
-            doc.save('MienMe-Personality-Results.pdf');
-        };
-
-        const showMessage = (messageText) => {
-            paymentMessage.classList.remove('hidden');
-            paymentMessage.textContent = messageText;
-            setTimeout(() => { paymentMessage.classList.add('hidden'); }, 4000);
-        };
-
-        const setPaymentLoading = (isLoading) => {
-            submitPaymentBtn.disabled = isLoading;
-            document.getElementById('button-text').classList.toggle('hidden', isLoading);
-            document.getElementById('payment-spinner').classList.toggle('hidden', !isLoading);
-        };
-
-        document.addEventListener('DOMContentLoaded', initialize);
-    </script>
-
+    <script src="script.js"></script>
 </body>
 </html>
-
