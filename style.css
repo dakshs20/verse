@@ -2,7 +2,7 @@ html {
     scroll-behavior: smooth;
 }
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Nunito Sans', sans-serif;
     background-color: white;
     color: #5091cd;
     transition: background-color 0.5s ease;
@@ -11,7 +11,7 @@ body.quiz-active {
     background-color: #f8f9fa;
 }
 h1, h2, h3, h4 {
-    font-family: 'Lora', serif;
+    font-family: 'Poppins', sans-serif;
     color: #5091cd; /* Ensure headings have the brand color */
 }
 /* Overriding default gray text from Tailwind on specific elements if needed */
@@ -37,8 +37,8 @@ a {
     50% { transform: scale(1.05); box-shadow: 0 7px 14px rgba(80, 145, 205, 0.3); }
 }
 .btn-primary {
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 600;
     background-color: #5091cd;
     color: white;
     transition: all 0.3s ease;
@@ -52,7 +52,8 @@ a {
     animation: none; /* Stop pulsing on hover */
 }
 .btn-option {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 600;
     background-color: white;
     border: 1px solid #5091cd;
     color: #5091cd;
