@@ -14,6 +14,92 @@ document.addEventListener('DOMContentLoaded', () => {
     const questionCounter = document.getElementById('question-counter');
     const progressBar = document.getElementById('progress-bar');
     
+    // --- PARTICLE BACKGROUND ---
+    const canvas = document.getElementById('particle-canvas');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        const setCanvasSize = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+
+        const createParticles = () => {
+            particles = [];
+            let particleCount = Math.floor(canvas.width / 50);
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: Math.random() * 0.4 - 0.2,
+                    vy: Math.random() * 0.4 - 0.2,
+                    radius: Math.random() * 1.5 + 0.5
+                });
+            }
+        };
+
+        const drawParticles = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(80, 145, 205, 0.4)';
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        };
+
+        const updateParticles = () => {
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+            });
+        };
+        
+        const animateParticles = () => {
+            drawParticles();
+            updateParticles();
+            requestAnimationFrame(animateParticles);
+        };
+        
+        window.addEventListener('resize', () => {
+            setCanvasSize();
+            createParticles();
+        });
+
+        setCanvasSize();
+        createParticles();
+        animateParticles();
+    }
+
+
+    // --- 3D CARD TILT EFFECT ---
+    const interactiveCardSections = document.querySelectorAll('.interactive-cards');
+    interactiveCardSections.forEach(section => {
+        section.addEventListener('mousemove', e => {
+            const cards = section.querySelectorAll('.card');
+            cards.forEach(card => {
+                const { left, top, width, height } = card.getBoundingClientRect();
+                const x = e.clientX - left - width / 2;
+                const y = e.clientY - top - height / 2;
+                const rotateX = (y / height) * -16;
+                const rotateY = (x / width) * 16;
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
+            });
+        });
+
+        section.addEventListener('mouseleave', () => {
+            const cards = section.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
+            });
+        });
+    });
+
+
+    // --- QUIZ LOGIC (Unchanged from previous version) ---
     const questions = [
         { q: "You feel energized after spending time at a large social gathering.", trait: 'EI' },
         { q: "You are often the first to introduce yourself to new people.", trait: 'EI' },
@@ -144,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const resultType = calculateResult();
         const resultData = personalityTypes[resultType];
         
-        document.getElementById('result-type').textContent = ''; // Clear for animation
+        document.getElementById('result-type').textContent = '';
         document.getElementById('result-title').textContent = resultData.title;
         document.getElementById('result-description').textContent = resultData.description;
         document.getElementById('result-careers').textContent = resultData.careers;
@@ -196,7 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const element = document.createElement('div');
             element.innerHTML = `
                 <div class="font-bold text-center text-lg mb-2">${data.name}</div>
-                <div class="flex justify-between items-center text-sm font-semibold text-gray-600 mb-1 px-1">
+                <div class="flex justify-between items-center text-sm font-semibold text-gray-500 mb-1 px-1">
                     <span>${data.left}</span>
                     <span>${data.right}</span>
                 </div>
@@ -242,3 +328,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
